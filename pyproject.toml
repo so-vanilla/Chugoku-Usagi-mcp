@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voicevox-claude"
+version = "0.1.0"
+description = "VOICEVOX MCP server for Claude Code"
+requires-python = ">=3.12"
+dependencies = [
+    "mcp[cli]>=1.0",
+    "httpx>=0.27",
+]
+
+[project.scripts]
+voicevox-claude = "voicevox_claude.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+voicevox_claude = ["characters/data/*.toml"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pyright]
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"
+typeCheckingMode = "basic"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

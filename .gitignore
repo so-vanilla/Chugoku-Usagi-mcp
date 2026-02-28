@@ -1,0 +1,18 @@
+# devenv
+.devenv*
+.envrc
+devenv.nix
+devenv.yaml
+devenv.lock
+.direnv/
+
+# MCP
+.mcp.json
+
+# Python
+__pycache__/
+*.egg-info/
+*.egg
+dist/
+build/
+.venv/
