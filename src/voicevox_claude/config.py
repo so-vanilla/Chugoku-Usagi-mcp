@@ -12,8 +12,6 @@ CONFIG_PATH = CONFIG_DIR / "config.toml"
 
 DEFAULT_VOICEVOX_HOST = "http://localhost"
 DEFAULT_VOICEVOX_PORT = 50021
-DEFAULT_CHARACTER = "chugoku_usagi"
-DEFAULT_STYLE = "normal"
 DEFAULT_SPEED = 1.0
 
 
@@ -30,8 +28,6 @@ class VoicevoxConfig:
 @dataclass(frozen=True)
 class Config:
     voicevox: VoicevoxConfig = field(default_factory=VoicevoxConfig)
-    default_character: str = DEFAULT_CHARACTER
-    default_style: str = DEFAULT_STYLE
     default_speed: float = DEFAULT_SPEED
 
 
@@ -51,7 +47,5 @@ def load_config() -> Config:
     defaults = data.get("defaults", {})
     return Config(
         voicevox=voicevox,
-        default_character=defaults.get("character", DEFAULT_CHARACTER),
-        default_style=defaults.get("style", DEFAULT_STYLE),
         default_speed=defaults.get("speed", DEFAULT_SPEED),
     )

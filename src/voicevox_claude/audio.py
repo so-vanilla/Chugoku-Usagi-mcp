@@ -5,6 +5,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 import tempfile
+import threading
 from pathlib import Path
 
 
@@ -41,12 +42,16 @@ def play_wav(wav_data: bytes) -> None:
 
     cmd, extra_args = player
     tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
-    try:
-        tmp.write(wav_data)
-        tmp.close()
-        subprocess.run([cmd, *extra_args, tmp.name], check=True)
-    finally:
+    tmp.write(wav_data)
+    tmp.close()
+
+    proc = subprocess.Popen([cmd, *extra_args, tmp.name])
+
+    def _cleanup() -> None:
+        proc.wait()
         Path(tmp.name).unlink(missing_ok=True)
+
+    threading.Thread(target=_cleanup, daemon=True).start()
 
 
 def can_play() -> bool:

@@ -11,11 +11,3 @@ class VoicevoxConnectionError(VoicevoxClaudeError):
 
 class VoicevoxSynthesisError(VoicevoxClaudeError):
     """Audio synthesis failed."""
-
-
-class CharacterNotFoundError(VoicevoxClaudeError):
-    """Requested character does not exist."""
-
-
-class StyleNotFoundError(VoicevoxClaudeError):
-    """Requested style does not exist for the character."""
