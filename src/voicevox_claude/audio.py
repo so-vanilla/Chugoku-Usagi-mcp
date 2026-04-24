@@ -2,31 +2,54 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import tempfile
 import threading
 from pathlib import Path
 
+_WSLG_PULSE_SOCKET = Path("/mnt/wslg/PulseServer")
+
 _lock = threading.Lock()
 _current_proc: subprocess.Popen[bytes] | None = None
 _current_tmp: Path | None = None
 
 
+def _is_wslg() -> bool:
+    return _WSLG_PULSE_SOCKET.exists()
+
+
 def _detect_player() -> tuple[str, list[str]] | None:
     """Return ``(command, extra_args)`` for the first available audio player.
 
-    Detection order: pw-play (PipeWire), paplay, aplay, ffplay.
+    On WSLg, prefers paplay (PulseAudio) because pw-play sends audio to
+    PipeWire's Dummy Output instead of the WSLg RDP sink.
     """
-    candidates: list[tuple[str, list[str]]] = [
-        ("pw-play", []),
-        ("paplay", []),
-        ("aplay", ["-q"]),
-        ("ffplay", ["-nodisp", "-autoexit", "-loglevel", "quiet"]),
-    ]
+    if _is_wslg():
+        candidates: list[tuple[str, list[str]]] = [
+            ("paplay", []),
+            ("aplay", ["-q"]),
+            ("ffplay", ["-nodisp", "-autoexit", "-loglevel", "quiet"]),
+        ]
+    else:
+        candidates = [
+            ("pw-play", []),
+            ("paplay", []),
+            ("aplay", ["-q"]),
+            ("ffplay", ["-nodisp", "-autoexit", "-loglevel", "quiet"]),
+        ]
     for cmd, args in candidates:
         if shutil.which(cmd) is not None:
             return (cmd, args)
+    return None
+
+
+def _playback_env() -> dict[str, str] | None:
+    if _is_wslg():
+        env = os.environ.copy()
+        env["PULSE_SERVER"] = f"unix:{_WSLG_PULSE_SOCKET}"
+        return env
     return None
 
 
@@ -67,7 +90,7 @@ def play_wav(wav_data: bytes) -> None:
 
     with _lock:
         _stop_current()
-        proc = subprocess.Popen([cmd, *extra_args, tmp.name])
+        proc = subprocess.Popen([cmd, *extra_args, tmp.name], env=_playback_env())
         _current_proc = proc
         _current_tmp = tmp_path
 
